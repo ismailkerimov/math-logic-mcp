@@ -22,7 +22,7 @@ from math_logic.engine import MathLogicEngine, ProblemType
 # ── server instance ──────────────────────────────────────────────────
 mcp = FastMCP(
     "Math & Logic MCP Server",
-    description=(
+    instructions=(
         "Verified symbolic math and formal logic tools for LLMs. "
         "Solves equations, simplifies expressions, checks Boolean satisfiability, "
         "evaluates arithmetic — all with proof steps."
@@ -208,7 +208,7 @@ def main():
         port = int(os.environ.get("PORT", 8080))
         mcp.run(transport="sse", host="0.0.0.0", port=port)
     else:
-        mcp.run()
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
