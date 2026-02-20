@@ -206,7 +206,9 @@ def main():
     """CLI entry point for the MCP server."""
     if "--http" in sys.argv:
         port = int(os.environ.get("PORT", 8080))
-        mcp.run(transport="sse", host="0.0.0.0", port=port)
+        # Use streamable-http (MCP spec default); fall back to SSE with --sse
+        transport = "sse" if "--sse" in sys.argv else "streamable-http"
+        mcp.run(transport=transport, host="0.0.0.0", port=port)
     else:
         mcp.run(transport="stdio")
 
