@@ -16,6 +16,8 @@ import sys
 from typing import Optional
 
 from fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
 
 from math_logic.engine import MathLogicEngine, ProblemType
 
@@ -198,6 +200,109 @@ def get_capabilities() -> str:
             "check_logic", "verify_arithmetic",
         ],
     }, indent=2)
+
+
+# ── HTTP routes (health check + Smithery server card) ────────────────
+
+_SERVER_CARD = {
+    "serverInfo": {
+        "name": "Math & Logic MCP Server",
+        "version": "0.2.0",
+    },
+    "authentication": {
+        "required": False,
+    },
+    "tools": [
+        {
+            "name": "solve_equation",
+            "description": "Solve an algebraic equation symbolically.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "equation": {"type": "string", "description": "A math equation, e.g. 'x^2 + 2x - 8 = 0'"}
+                },
+                "required": ["equation"],
+            },
+        },
+        {
+            "name": "simplify_expression",
+            "description": "Simplify, factor, or expand a mathematical expression.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string", "description": "e.g. 'simplify (x^2 - 1)/(x - 1)'"}
+                },
+                "required": ["expression"],
+            },
+        },
+        {
+            "name": "compute_derivative",
+            "description": "Compute the derivative of an expression.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string"},
+                    "variable": {"type": "string", "default": "x"},
+                },
+                "required": ["expression"],
+            },
+        },
+        {
+            "name": "compute_integral",
+            "description": "Compute the indefinite integral of an expression.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string"},
+                    "variable": {"type": "string", "default": "x"},
+                },
+                "required": ["expression"],
+            },
+        },
+        {
+            "name": "check_logic",
+            "description": "Check a propositional logic formula for satisfiability or tautology.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "formula": {"type": "string"},
+                    "check_type": {"type": "string", "default": "satisfiability"},
+                },
+                "required": ["formula"],
+            },
+        },
+        {
+            "name": "verify_arithmetic",
+            "description": "Safely evaluate an arithmetic expression (no eval).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string", "description": "e.g. '2 + 3 * 4', 'sqrt(144)'"}
+                },
+                "required": ["expression"],
+            },
+        },
+    ],
+    "resources": [],
+    "prompts": [],
+}
+
+
+@mcp.custom_route("/", methods=["GET"])
+async def health_check(request: Request) -> Response:
+    """Health check — lets Railway / load balancers know the server is alive."""
+    return JSONResponse({
+        "status": "ok",
+        "server": "Math & Logic MCP Server",
+        "version": "0.2.0",
+        "mcp_endpoint": "/mcp",
+    })
+
+
+@mcp.custom_route("/.well-known/mcp/server-card.json", methods=["GET"])
+async def server_card(request: Request) -> Response:
+    """Smithery server card for automatic scanning."""
+    return JSONResponse(_SERVER_CARD)
 
 
 # ── Entry point ──────────────────────────────────────────────────────
