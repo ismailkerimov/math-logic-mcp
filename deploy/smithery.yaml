@@ -1,0 +1,9 @@
+# Smithery.ai MCP server listing
+# https://smithery.ai/docs/config
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |-
+    (config) => ({ command: 'math-logic-mcp' })

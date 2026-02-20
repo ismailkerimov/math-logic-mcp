@@ -1,0 +1,11 @@
+{
+  "_comment": "Add to .vscode/settings.json",
+  "mcp": {
+    "servers": {
+      "math-logic": {
+        "type": "stdio",
+        "command": "math-logic-mcp"
+      }
+    }
+  }
+}
