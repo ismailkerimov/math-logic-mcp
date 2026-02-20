@@ -79,6 +79,7 @@ results/*.json
 # Markdown files (except README.md)
 *.md
 !README.md
+!CONTRIBUTING.md
 
 # Z3 library issues workaround
 *.dylib
