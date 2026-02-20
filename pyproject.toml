@@ -18,6 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "fastmcp>=0.1.0",
     "sympy>=1.12",
     "z3-solver>=4.12.2",
     "pydantic>=2.0",

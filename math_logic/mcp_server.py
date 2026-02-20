@@ -11,6 +11,7 @@ Requires: pip install fastmcp
 from __future__ import annotations
 
 import json
+import os
 import sys
 from typing import Optional
 
@@ -204,7 +205,8 @@ def get_capabilities() -> str:
 def main():
     """CLI entry point for the MCP server."""
     if "--http" in sys.argv:
-        mcp.run(transport="sse")
+        port = int(os.environ.get("PORT", 8080))
+        mcp.run(transport="sse", host="0.0.0.0", port=port)
     else:
         mcp.run()
 
