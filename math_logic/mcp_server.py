@@ -13,9 +13,10 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastmcp import FastMCP
+from pydantic import Field
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -45,90 +46,116 @@ def _get_engine() -> MathLogicEngine:
 # ── Tools ────────────────────────────────────────────────────────────
 
 
-@mcp.tool()
-def solve_equation(equation: str) -> str:
-    """
-    Solve an algebraic equation symbolically.
-
-    Args:
-        equation: A math equation in natural language or symbolic form.
-                  Examples: "x^2 + 2x - 8 = 0", "Solve 3x + 5 = 20",
-                  "Find x if 2x - 7 = 3"
-
-    Returns:
-        JSON with solutions, proof steps, and verification.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Solve Equation",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def solve_equation(
+    equation: Annotated[
+        str,
+        Field(description="A math equation to solve. Examples: 'x^2 + 2x - 8 = 0', 'Solve 3x + 5 = 20', 'Find x if 2x - 7 = 3'"),
+    ],
+) -> str:
+    """Solve an algebraic equation symbolically and return solutions with proof steps."""
     result = _get_engine().solve(equation)
     return result.to_json()
 
 
-@mcp.tool()
-def simplify_expression(expression: str) -> str:
-    """
-    Simplify, factor, or expand a mathematical expression.
-
-    Args:
-        expression: A math expression with an operation verb.
-                    Examples: "simplify (x^2 - 1) / (x - 1)",
-                    "factor x^2 - 5x + 6", "expand (x + 1)^3"
-
-    Returns:
-        JSON with the simplified result and proof steps.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Simplify Expression",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def simplify_expression(
+    expression: Annotated[
+        str,
+        Field(description="A math expression with an operation verb. Examples: 'simplify (x^2 - 1)/(x - 1)', 'factor x^2 - 5x + 6', 'expand (x + 1)^3'"),
+    ],
+) -> str:
+    """Simplify, factor, or expand a mathematical expression with proof steps."""
     result = _get_engine().solve(expression)
     return result.to_json()
 
 
-@mcp.tool()
-def compute_derivative(expression: str, variable: str = "x") -> str:
-    """
-    Compute the derivative of an expression.
-
-    Args:
-        expression: The mathematical expression to differentiate.
-                    Example: "x^3 + 2x^2 - 5x + 1"
-        variable: The variable to differentiate with respect to (default "x").
-
-    Returns:
-        JSON with the derivative and proof steps.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Compute Derivative",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def compute_derivative(
+    expression: Annotated[
+        str,
+        Field(description="The mathematical expression to differentiate. Example: 'x^3 + 2x^2 - 5x + 1'"),
+    ],
+    variable: Annotated[
+        str,
+        Field(default="x", description="The variable to differentiate with respect to."),
+    ] = "x",
+) -> str:
+    """Compute the derivative of a mathematical expression with proof steps."""
     problem = f"derivative of {expression} with respect to {variable}"
     result = _get_engine().solve(problem)
     return result.to_json()
 
 
-@mcp.tool()
-def compute_integral(expression: str, variable: str = "x") -> str:
-    """
-    Compute the indefinite integral of an expression.
-
-    Args:
-        expression: The mathematical expression to integrate.
-                    Example: "3x^2 + 4x"
-        variable: The variable to integrate with respect to (default "x").
-
-    Returns:
-        JSON with the integral and proof steps.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Compute Integral",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def compute_integral(
+    expression: Annotated[
+        str,
+        Field(description="The mathematical expression to integrate. Example: '3x^2 + 4x'"),
+    ],
+    variable: Annotated[
+        str,
+        Field(default="x", description="The variable to integrate with respect to."),
+    ] = "x",
+) -> str:
+    """Compute the indefinite integral of a mathematical expression with proof steps."""
     problem = f"integrate {expression} with respect to {variable}"
     result = _get_engine().solve(problem)
     return result.to_json()
 
 
-@mcp.tool()
-def check_logic(formula: str, check_type: str = "satisfiability") -> str:
-    """
-    Check a propositional logic formula.
-
-    Args:
-        formula: A Boolean formula using variables and operators.
-                 Operators: and/&, or/|, not/!, ->/implies, (, )
-                 Examples: "p and (q or r)", "(p -> q) and (q -> r) -> (p -> r)"
-        check_type: One of "satisfiability", "tautology", or "truth_table".
-
-    Returns:
-        JSON with the result, model/counter-example, and proof.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Check Logic",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def check_logic(
+    formula: Annotated[
+        str,
+        Field(description="A Boolean formula using variables and operators (and/&, or/|, not/!, ->/implies). Examples: 'p and (q or r)', '(p -> q) and (q -> r) -> (p -> r)'"),
+    ],
+    check_type: Annotated[
+        str,
+        Field(default="satisfiability", description="Type of check: 'satisfiability', 'tautology', or 'truth_table'."),
+    ] = "satisfiability",
+) -> str:
+    """Check a propositional logic formula for satisfiability, tautology, or generate a truth table."""
     prefix_map = {
         "satisfiability": "Check satisfiability of",
         "tautology": "Check if tautology:",
@@ -140,21 +167,22 @@ def check_logic(formula: str, check_type: str = "satisfiability") -> str:
     return result.to_json()
 
 
-@mcp.tool()
-def verify_arithmetic(expression: str) -> str:
-    """
-    Safely evaluate an arithmetic expression and return the result.
-
-    This tool uses NO eval() — only whitelisted operators and functions.
-
-    Args:
-        expression: A numeric expression.
-                    Examples: "2 + 3 * 4", "sqrt(144)", "2^10",
-                    "factorial(10)", "log(100, 10)"
-
-    Returns:
-        JSON with the computed result and verification.
-    """
+@mcp.tool(
+    annotations={
+        "title": "Verify Arithmetic",
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+        "openWorldHint": False,
+    }
+)
+def verify_arithmetic(
+    expression: Annotated[
+        str,
+        Field(description="A numeric expression to evaluate safely (no eval). Examples: '2 + 3 * 4', 'sqrt(144)', '2^10', 'factorial(10)', 'log(100, 10)'"),
+    ],
+) -> str:
+    """Safely evaluate an arithmetic expression using only whitelisted operators and functions."""
     problem = f"compute {expression}"
     result = _get_engine().solve(problem)
     return result.to_json()
@@ -204,6 +232,13 @@ def get_capabilities() -> str:
 
 # ── HTTP routes (health check + Smithery server card) ────────────────
 
+_TOOL_ANNOTATIONS = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+}
+
 _SERVER_CARD = {
     "serverInfo": {
         "name": "Math & Logic MCP Server",
@@ -215,69 +250,75 @@ _SERVER_CARD = {
     "tools": [
         {
             "name": "solve_equation",
-            "description": "Solve an algebraic equation symbolically.",
+            "description": "Solve an algebraic equation symbolically and return solutions with proof steps.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "equation": {"type": "string", "description": "A math equation, e.g. 'x^2 + 2x - 8 = 0'"}
+                    "equation": {"type": "string", "description": "A math equation to solve. Examples: 'x^2 + 2x - 8 = 0', 'Solve 3x + 5 = 20', 'Find x if 2x - 7 = 3'"}
                 },
                 "required": ["equation"],
             },
         },
         {
             "name": "simplify_expression",
-            "description": "Simplify, factor, or expand a mathematical expression.",
+            "description": "Simplify, factor, or expand a mathematical expression with proof steps.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "expression": {"type": "string", "description": "e.g. 'simplify (x^2 - 1)/(x - 1)'"}
+                    "expression": {"type": "string", "description": "A math expression with an operation verb. Examples: 'simplify (x^2 - 1)/(x - 1)', 'factor x^2 - 5x + 6', 'expand (x + 1)^3'"}
                 },
                 "required": ["expression"],
             },
         },
         {
             "name": "compute_derivative",
-            "description": "Compute the derivative of an expression.",
+            "description": "Compute the derivative of a mathematical expression with proof steps.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "expression": {"type": "string"},
-                    "variable": {"type": "string", "default": "x"},
+                    "expression": {"type": "string", "description": "The mathematical expression to differentiate. Example: 'x^3 + 2x^2 - 5x + 1'"},
+                    "variable": {"type": "string", "default": "x", "description": "The variable to differentiate with respect to."},
                 },
                 "required": ["expression"],
             },
         },
         {
             "name": "compute_integral",
-            "description": "Compute the indefinite integral of an expression.",
+            "description": "Compute the indefinite integral of a mathematical expression with proof steps.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "expression": {"type": "string"},
-                    "variable": {"type": "string", "default": "x"},
+                    "expression": {"type": "string", "description": "The mathematical expression to integrate. Example: '3x^2 + 4x'"},
+                    "variable": {"type": "string", "default": "x", "description": "The variable to integrate with respect to."},
                 },
                 "required": ["expression"],
             },
         },
         {
             "name": "check_logic",
-            "description": "Check a propositional logic formula for satisfiability or tautology.",
+            "description": "Check a propositional logic formula for satisfiability, tautology, or generate a truth table.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "formula": {"type": "string"},
-                    "check_type": {"type": "string", "default": "satisfiability"},
+                    "formula": {"type": "string", "description": "A Boolean formula using variables and operators (and/&, or/|, not/!, ->/implies). Examples: 'p and (q or r)', '(p -> q) and (q -> r) -> (p -> r)'"},
+                    "check_type": {"type": "string", "default": "satisfiability", "description": "Type of check: 'satisfiability', 'tautology', or 'truth_table'."},
                 },
                 "required": ["formula"],
             },
         },
         {
             "name": "verify_arithmetic",
-            "description": "Safely evaluate an arithmetic expression (no eval).",
+            "description": "Safely evaluate an arithmetic expression using only whitelisted operators and functions.",
+            "annotations": _TOOL_ANNOTATIONS,
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "expression": {"type": "string", "description": "e.g. '2 + 3 * 4', 'sqrt(144)'"}
+                    "expression": {"type": "string", "description": "A numeric expression to evaluate safely (no eval). Examples: '2 + 3 * 4', 'sqrt(144)', '2^10', 'factorial(10)', 'log(100, 10)'"}
                 },
                 "required": ["expression"],
             },
