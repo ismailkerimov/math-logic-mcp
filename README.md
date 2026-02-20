@@ -2,6 +2,7 @@
 
 **MCP server that gives small LLMs verified symbolic-math & logic tools.**
 
+[![PyPI](https://img.shields.io/pypi/v/math-logic-mcp)](https://pypi.org/project/math-logic-mcp/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 Small language models (Mistral, Llama, Phi, Gemma) struggle with multi-step math and formal logic. Instead of fine-tuning, **give them tools**. This project exposes a set of verified math and logic solvers via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io), so any MCP-compatible LLM can call them as functions.
@@ -21,16 +22,16 @@ Every result includes **proof steps** and **verification** — the LLM gets a ma
 
 ## Quick Start
 
-### Install (minimal — arithmetic only)
+### Install from PyPI
 
 ```bash
-pip install -e .
+pip install math-logic-mcp
 ```
 
 ### Install (full — all solvers)
 
 ```bash
-pip install -e ".[full]"
+pip install "math-logic-mcp[full]"
 ```
 
 ### Run the MCP server
@@ -117,16 +118,16 @@ The **router** classifies each problem by regex patterns and routes to the best 
 | `[dev]` | + pytest, ruff | ~85 MB |
 
 ```bash
-pip install -e ".[sympy]"     # algebra + calculus
-pip install -e ".[z3]"        # logic
-pip install -e ".[full]"      # everything
-pip install -e ".[full,dev]"  # everything + dev tools
+pip install "math-logic-mcp[sympy]"      # algebra + calculus
+pip install "math-logic-mcp[z3]"         # logic
+pip install "math-logic-mcp[full]"       # everything
+pip install "math-logic-mcp[full,dev]"   # everything + dev tools
 ```
 
 ## Development
 
 ```bash
-git clone https://github.com/user/math-logic-mcp.git
+git clone https://github.com/ismailkerimov/math-logic-mcp.git
 cd math-logic-mcp
 pip install -e ".[full,dev]"
 pytest tests/ -v
